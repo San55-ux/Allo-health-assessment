@@ -1,0 +1,36 @@
+import { PrismaClient } from '@prisma/client'
+
+const prisma = new PrismaClient()
+
+async function main() {
+  // Clean up
+  await prisma.reservation.deleteMany()
+  await prisma.stock.deleteMany()
+  await prisma.product.deleteMany()
+  await prisma.warehouse.deleteMany()
+
+  // Warehouses
+  const wh1 = await prisma.warehouse.create({ data: { name: 'Mumbai Central', location: 'Mumbai, MH' } })
+  const wh2 = await prisma.warehouse.create({ data: { name: 'Delhi North', location: 'Delhi, DL' } })
+
+  // Products
+  const p1 = await prisma.product.create({ data: { name: 'Wireless Earbuds Pro', description: 'ANC earbuds with 30hr battery', price: 2999 } })
+  const p2 = await prisma.product.create({ data: { name: 'Smart Watch X1', description: 'Health tracking smartwatch', price: 4999 } })
+  const p3 = await prisma.product.create({ data: { name: 'USB-C Hub 7-in-1', description: 'Multiport adapter for laptops', price: 1499 } })
+
+  // Stock
+  await prisma.stock.createMany({
+    data: [
+      { productId: p1.id, warehouseId: wh1.id, total: 10, reserved: 0 },
+      { productId: p1.id, warehouseId: wh2.id, total: 5, reserved: 0 },
+      { productId: p2.id, warehouseId: wh1.id, total: 3, reserved: 0 },
+      { productId: p2.id, warehouseId: wh2.id, total: 2, reserved: 0 },
+      { productId: p3.id, warehouseId: wh1.id, total: 1, reserved: 0 },
+      { productId: p3.id, warehouseId: wh2.id, total: 0, reserved: 0 },
+    ]
+  })
+
+  console.log('Seed complete')
+}
+
+main().catch(console.error).finally(() => prisma.$disconnect())
